@@ -189,43 +189,8 @@
       "savedAmount": 1200000,
       "targetDate": "2026-12-31",
       "status": "completed"
-    },
-    {
-      "id": "2",
-      "userid": "1",
-      "itemName": "맥북 프로2",
-      "targetPrice": 3500000,
-      "savedAmount": 1200000,
-      "targetDate": "2026-12-31",
-      "status": "proceeding"
-    },
-    {
-      "userid": "1",
-      "itemName": "아무거나",
-      "targetPrice": 200000,
-      "savedAmount": 200000,
-      "targetDate": "2028-08-04",
-      "status": "proceeding",
-      "id": "ND4cyGU"
-    },
-    {
-      "userid": "1",
-      "itemName": "카메라",
-      "targetPrice": 20000,
-      "savedAmount": 200,
-      "targetDate": "2028-03-09",
-      "status": "proceeding",
-      "id": "B4LDZJf"
-    },
-    {
-      "userid": "1",
-      "itemName": "노트북",
-      "targetPrice": 120000000,
-      "savedAmount": 2200000,
-      "targetDate": "2027-03-03",
-      "status": "proceeding",
-      "id": "GK6Rkpb"
     }
+    
   ],
   "purchases": [
     {
@@ -233,8 +198,7 @@
       "wishlistId": "1",
       "userid": "1",
       "itemName": "에어팟",
-      "completionDate": "2026-03-01",
-      "finalPrice": 300000
+      "completionDate": "2026-03-01"
     }
   ]
 }
