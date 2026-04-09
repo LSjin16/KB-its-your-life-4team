@@ -63,6 +63,16 @@
   ],
   "transactions": [
     {
+      "id": "3",
+      "userid": "2",
+      "date": "2026-04-09",
+      "type": "expense",
+      "category": "쇼핑",
+      "detailCategory": "의류",
+      "amount": 50000,
+      "memo": "김철수 테스트 구매"
+    },
+    {
       "id": "1",
       "userid": "1",
       "date": "2026-04-07",
@@ -170,21 +180,48 @@
     }
   ],
   "incomeCategory": [
-    "월급",
-    "용돈",
-    "이자",
-    "부업",
-    "기타"
+    {
+      "id": 4,
+      "name": "부업"
+    },
+    {
+      "id": 5,
+      "name": "기타"
+    }
   ],
   "expenseCategory": [
-    "식비",
-    "교통비",
-    "유흥",
-    "공과금",
-    "의료",
-    "주거",
-    "쇼핑",
-    "저축"
+    {
+      "id": 1,
+      "name": "식비"
+    },
+    {
+      "id": 2,
+      "name": "교통비"
+    },
+    {
+      "id": 3,
+      "name": "유흥"
+    },
+    {
+      "id": 4,
+      "name": "공과금"
+    },
+    {
+      "id": 5,
+      "name": "의료"
+    },
+    {
+      "id": 6,
+      "name": "주거"
+    },
+    {
+      "id": 7,
+      "name": "쇼핑"
+    },
+    {
+      "id": 8,
+      "name": "저축"
+    }
   ],
   "periodicExpense": [
     {
@@ -195,6 +232,15 @@
       "category": "통신비",
       "amount": 55000,
       "memo": "핸드폰 요금 자동이체"
+    },
+    {
+      "userid": "2",
+      "date": "2026-04-01",
+      "type": "expense",
+      "category": "고정 지출",
+      "amount": 10000,
+      "memo": "넷플릭스",
+      "id": "myt44Hv"
     }
   ],
   "wishlists": [
@@ -206,43 +252,8 @@
       "savedAmount": 1200000,
       "targetDate": "2026-12-31",
       "status": "completed"
-    },
-    {
-      "id": "2",
-      "userid": "1",
-      "itemName": "맥북 프로2",
-      "targetPrice": 3500000,
-      "savedAmount": 1200000,
-      "targetDate": "2026-12-31",
-      "status": "proceeding"
-    },
-    {
-      "userid": "1",
-      "itemName": "아무거나",
-      "targetPrice": 200000,
-      "savedAmount": 200000,
-      "targetDate": "2028-08-04",
-      "status": "proceeding",
-      "id": "ND4cyGU"
-    },
-    {
-      "userid": "1",
-      "itemName": "카메라",
-      "targetPrice": 20000,
-      "savedAmount": 200,
-      "targetDate": "2028-03-09",
-      "status": "proceeding",
-      "id": "B4LDZJf"
-    },
-    {
-      "userid": "1",
-      "itemName": "노트북",
-      "targetPrice": 120000000,
-      "savedAmount": 2200000,
-      "targetDate": "2027-03-03",
-      "status": "proceeding",
-      "id": "GK6Rkpb"
     }
+    
   ],
   "purchases": [
     {
@@ -250,8 +261,7 @@
       "wishlistId": "1",
       "userid": "1",
       "itemName": "에어팟",
-      "completionDate": "2026-03-01",
-      "finalPrice": 300000
+      "completionDate": "2026-03-01"
     }
   ]
 }
