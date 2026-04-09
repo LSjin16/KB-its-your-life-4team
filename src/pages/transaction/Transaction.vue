@@ -14,7 +14,6 @@
     </div>
 
     <div class="content-grid">
-      <!-- 거래 내역 -->
       <section class="card card-large">
         <div class="section-head">
           <button class="pill">거래 내역</button>
@@ -37,7 +36,6 @@
                 <th>관리</th>
               </tr>
             </thead>
-
             <tbody>
               <tr v-for="item in filteredTransactions" :key="String(item.id)">
                 <td>{{ formatDate(item.date) }}</td>
@@ -50,7 +48,6 @@
                   {{ item.type === 'income' ? '+' : '-'
                   }}{{ formatCurrency(item.amount) }}
                 </td>
-                <td>{{ item.category }}</td>
                 <td>
                   <span
                     class="type-badge"
@@ -85,15 +82,13 @@
       </section>
 
       <div class="side-column">
-        <!-- 월 고정 지출 -->
         <section class="card">
           <div class="section-head">
             <button class="pill">월 고정 지출</button>
 
             <div class="fixed-head-actions">
               <div class="total-box">
-                <span>합계:</span>
-                <strong>{{ formatCurrency(totalPeriodicExpense) }}</strong>
+                
               </div>
               <button
                 class="line-btn disabled-look"
@@ -121,12 +116,31 @@
                   <th>관리</th>
                 </tr>
               </thead>
-
               <tbody>
-                <tr v-for="item in periodicExpenses" :key="String(item.id)">
-                  <td>{{ item.memo }}</td>
-                  <td class="expense">-{{ formatCurrency(item.amount) }}</td>
-                  <td>{{ getDayFromDate(item.date) }}일</td>
+                <tr v-if="isAddingPeriodicExpense" class="edit-row">
+                  <td>
+                    <input
+                      type="text"
+                      v-model="newPeriodicExpense.memo"
+                      placeholder="내용 입력"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      v-model.number="newPeriodicExpense.amount"
+                      placeholder="비용"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="1"
+                      max="31"
+                      v-model.number="newPeriodicExpense.payDay"
+                    />
+                  </td>
                   <td class="manage-cell">
                     <button
                       class="mini-btn disabled-look"
@@ -151,7 +165,6 @@
           </div>
         </section>
 
-        <!-- 필터 -->
         <section class="card">
           <div class="section-head">
             <button class="pill">필터</button>
@@ -219,7 +232,48 @@ const range = reactive({
 });
 
 const transactions = ref([]);
-const periodicExpenses = ref([]);
+const periodicExpenses = ref([]); 
+const incomeCategories = ref([]);
+const expenseCategories = ref([]);
+
+const isAddingTransaction = ref(false);
+const editingTransactionId = ref(null);
+const selectedNewCategory = ref("");
+const selectedEditCategory = ref("");
+
+const newTransaction = reactive({
+  date: range.start,
+  memo: "",
+  amount: null,
+  category: "",
+  type: "expense",
+});
+
+const editingTransaction = reactive({
+  id: null,
+  date: "",
+  memo: "",
+  amount: null,
+  category: "",
+  type: "expense",
+});
+
+/* 월 고정 지출 UI */
+const isAddingPeriodicExpense = ref(false);
+const editingPeriodicExpenseId = ref(null);
+
+const newPeriodicExpense = reactive({
+  memo: "",
+  amount: null,
+  payDay: 1,
+});
+
+const editingPeriodicExpense = reactive({
+  id: null,
+  memo: "",
+  amount: null,
+  payDay: 1,
+});
 
 const draftFilter = reactive({
   keyword: '',
@@ -235,8 +289,12 @@ const activeFilter = reactive({
   amount: null,
 });
 
-onMounted(async () => {
-  await Promise.all([fetchTransactions(), fetchPeriodicExpenses()]);
+const incomeCategorySet = computed(() => {
+  return new Set(
+    incomeCategories.value.map((item) =>
+      String(item).trim().toLowerCase()
+    )
+  );
 });
 
 async function fetchTransactions() {
@@ -275,10 +333,15 @@ const filteredTransactions = computed(() => {
         activeFilter.amount === '' ||
         itemAmount === Number(activeFilter.amount);
 
-      return matchesKeyword && matchesDate && matchesCategory && matchesAmount;
+      return (
+        matchesKeyword &&
+        matchesDate &&
+        matchesCategory &&
+        matchesAmount
+      );
     })
     .sort((a, b) => {
-      if (a.date === b.date) return String(b.id).localeCompare(String(a.id));
+      if (a.date === b.date) return Number(b.id) - Number(a.id);
       return b.date.localeCompare(a.date);
     });
 });
@@ -289,6 +352,176 @@ const totalPeriodicExpense = computed(() => {
     0,
   );
 });
+
+/* ---------------------------
+   거래 내역 기능
+--------------------------- */
+
+async function fetchTransactions() {
+  const userId = getCurrentUserId();
+
+  if (!userId) {
+    transactions.value = [];
+    return;
+  }
+
+  try {
+    const { data } = await axios.get(`${API_BASE}/transactions`, {
+      params: { userid: userId },
+    });
+    transactions.value = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("거래 내역 조회 실패:", error);
+    alert("거래 내역을 불러오지 못했습니다.");
+  }
+}
+
+async function fetchCategories() {
+  try {
+    const [incomeRes, expenseRes] = await Promise.all([
+      axios.get(`${API_BASE}/incomeCategory`),
+      axios.get(`${API_BASE}/expenseCategory`),
+    ]);
+
+    incomeCategories.value = Array.isArray(incomeRes.data)
+      ? incomeRes.data
+      : [];
+    expenseCategories.value = Array.isArray(expenseRes.data)
+      ? expenseRes.data
+      : [];
+  } catch (error) {
+    console.error("카테고리 조회 실패:", error);
+    alert("카테고리를 불러오지 못했습니다.");
+  }
+}
+
+function startAddTransaction() {
+  isAddingTransaction.value = true;
+  editingTransactionId.value = null;
+  selectedNewCategory.value = "";
+  newTransaction.date = range.start;
+  newTransaction.memo = "";
+  newTransaction.amount = null;
+  newTransaction.category = "";
+  newTransaction.type = "expense";
+}
+
+function cancelAddTransaction() {
+  isAddingTransaction.value = false;
+}
+
+async function createTransaction() {
+  const userId = getCurrentUserId();
+
+  if (!userId) {
+    alert("로그인 정보가 없습니다.");
+    return;
+  }
+
+  if (
+    !newTransaction.date ||
+    !newTransaction.memo ||
+    !newTransaction.category ||
+    !newTransaction.amount
+  ) {
+    alert("날짜, 내용, 금액, 분류를 모두 입력해주세요.");
+    return;
+  }
+
+  const detectedType = detectTransactionType(newTransaction.category);
+
+  try {
+    await axios.post(`${API_BASE}/transactions`, {
+      userid: userId,
+      date: newTransaction.date,
+      type: detectedType,
+      category: newTransaction.category.trim(),
+      detailCategory: "",
+      amount: Number(newTransaction.amount),
+      memo: newTransaction.memo.trim(),
+    });
+
+    isAddingTransaction.value = false;
+    await fetchTransactions();
+  } catch (error) {
+    console.error("거래 내역 추가 실패:", error);
+    alert("거래 내역 추가에 실패했습니다.");
+  }
+}
+
+function beginEditTransaction(item) {
+  isAddingTransaction.value = false;
+  editingTransactionId.value = String(item.id);
+  selectedEditCategory.value = "";
+  editingTransaction.id = String(item.id);
+  editingTransaction.date = item.date;
+  editingTransaction.memo = item.memo;
+  editingTransaction.amount = item.amount;
+  editingTransaction.category = item.category;
+  editingTransaction.type =
+    item.type || detectTransactionType(item.category);
+}
+
+function cancelEditTransaction() {
+  editingTransactionId.value = null;
+}
+
+async function updateTransaction() {
+  if (
+    !editingTransaction.date ||
+    !editingTransaction.memo ||
+    !editingTransaction.category ||
+    !editingTransaction.amount
+  ) {
+    alert("날짜, 내용, 금액, 분류를 모두 입력해주세요.");
+    return;
+  }
+
+  const detectedType = detectTransactionType(editingTransaction.category);
+
+  try {
+    await axios.patch(`${API_BASE}/transactions/${editingTransaction.id}`, {
+      date: editingTransaction.date,
+      memo: editingTransaction.memo.trim(),
+      amount: Number(editingTransaction.amount),
+      category: editingTransaction.category.trim(),
+      type: detectedType,
+    });
+
+    editingTransactionId.value = null;
+    await fetchTransactions();
+  } catch (error) {
+    console.error("거래 내역 수정 실패:", error);
+    alert("거래 내역 수정에 실패했습니다.");
+  }
+}
+
+async function removeTransaction(id) {
+  const ok = window.confirm("이 거래 내역을 삭제할까요?");
+  if (!ok) return;
+
+  const targetId = String(id);
+
+  try {
+    await axios.delete(`${API_BASE}/transactions/${targetId}`);
+    transactions.value = transactions.value.filter(
+      (item) => String(item.id) !== targetId
+    );
+
+    if (editingTransactionId.value === targetId) {
+      editingTransactionId.value = null;
+    }
+  } catch (error) {
+    console.error("거래 내역 삭제 실패:", error);
+    alert("거래 내역 삭제에 실패했습니다.");
+  }
+}
+
+
+
+/* ---------------------------
+   필터
+--------------------------- */
 
 function applyFilter() {
   activeFilter.keyword = draftFilter.keyword;
@@ -312,9 +545,42 @@ function resetFilter() {
   activeFilter.amount = null;
 }
 
-function isInRange(date) {
-  if (!range.start || !range.end) return true;
-  return date >= range.start && date <= range.end;
+/* ---------------------------
+   공통
+--------------------------- */
+
+function detectTransactionType(category) {
+  const normalized = String(category || "").trim().toLowerCase();
+
+  if (!normalized) return "expense";
+  if (normalized === "고정 지출") return "expense";
+  if (incomeCategorySet.value.has(normalized)) return "income";
+  if (expenseCategorySet.value.has(normalized)) return "expense";
+  return "expense";
+}
+
+function syncTypeFromCategory(target) {
+  if (target === "new") {
+    newTransaction.type = detectTransactionType(newTransaction.category);
+  } else {
+    editingTransaction.type = detectTransactionType(
+      editingTransaction.category
+    );
+  }
+}
+
+function applySelectedCategory(target) {
+  if (target === "new") {
+    if (selectedNewCategory.value) {
+      newTransaction.category = selectedNewCategory.value;
+      syncTypeFromCategory("new");
+    }
+  } else {
+    if (selectedEditCategory.value) {
+      editingTransaction.category = selectedEditCategory.value;
+      syncTypeFromCategory("edit");
+    }
+  }
 }
 
 function formatCurrency(value) {
@@ -530,12 +796,20 @@ h1 {
   cursor: pointer;
 }
 
+.mini-btn.primary {
+  background: #2337ff;
+  border-color: #2337ff;
+  color: #fff;
+}
+
 .mini-btn.danger {
   border-color: #ffb7b7;
   color: #d52b2b;
   background: #fff7f7;
 }
 
+.edit-row input,
+.edit-row select,
 .filter-form input {
   width: 100%;
   border: 1px solid #d9dde5;
@@ -547,8 +821,16 @@ h1 {
   box-sizing: border-box;
 }
 
+.edit-row input:focus,
+.edit-row select:focus,
 .filter-form input:focus {
   border-color: #2337ff;
+}
+
+.category-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .filter-form {
@@ -603,10 +885,6 @@ h1 {
 .expense-badge {
   color: #d32f2f;
   background: #fff0f0;
-}
-
-.disabled-look {
-  opacity: 0.75;
 }
 
 @media (max-width: 1200px) {
