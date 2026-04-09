@@ -18,7 +18,9 @@
       <section class="card card-large">
         <div class="section-head">
           <button class="pill">거래 내역</button>
-          <button class="line-btn disabled-look" @click="notReady('거래 내역 추가')">
+          <button
+            class="line-btn disabled-look"
+            @click="notReady('거래 내역 추가')">
             추가
           </button>
         </div>
@@ -40,30 +42,42 @@
               <tr v-for="item in filteredTransactions" :key="String(item.id)">
                 <td>{{ formatDate(item.date) }}</td>
                 <td>{{ item.memo }}</td>
-                <td :class="{ income: item.type === 'income', expense: item.type !== 'income' }">
-                  {{ item.type === "income" ? "+" : "-" }}{{ formatCurrency(item.amount) }}
+                <td
+                  :class="{
+                    income: item.type === 'income',
+                    expense: item.type !== 'income',
+                  }">
+                  {{ item.type === 'income' ? '+' : '-'
+                  }}{{ formatCurrency(item.amount) }}
                 </td>
                 <td>{{ item.category }}</td>
                 <td>
                   <span
                     class="type-badge"
-                    :class="item.type === 'income' ? 'income-badge' : 'expense-badge'"
-                  >
-                    {{ item.type === "income" ? "수입" : "지출" }}
+                    :class="
+                      item.type === 'income' ? 'income-badge' : 'expense-badge'
+                    ">
+                    {{ item.type === 'income' ? '수입' : '지출' }}
                   </span>
                 </td>
                 <td class="manage-cell">
-                  <button class="mini-btn disabled-look" @click="notReady('거래 내역 수정')">
+                  <button
+                    class="mini-btn disabled-look"
+                    @click="notReady('거래 내역 수정')">
                     수정
                   </button>
-                  <button class="mini-btn danger disabled-look" @click="notReady('거래 내역 삭제')">
+                  <button
+                    class="mini-btn danger disabled-look"
+                    @click="notReady('거래 내역 삭제')">
                     삭제
                   </button>
                 </td>
               </tr>
 
               <tr v-if="filteredTransactions.length === 0">
-                <td colspan="6" class="empty">조건에 맞는 거래 내역이 없습니다.</td>
+                <td colspan="6" class="empty">
+                  조건에 맞는 거래 내역이 없습니다.
+                </td>
               </tr>
             </tbody>
           </table>
@@ -81,14 +95,18 @@
                 <span>합계:</span>
                 <strong>{{ formatCurrency(totalPeriodicExpense) }}</strong>
               </div>
-              <button class="line-btn disabled-look" @click="notReady('월 고정 지출 저장')">
+              <button
+                class="line-btn disabled-look"
+                @click="notReady('월 고정 지출 저장')">
                 저장
               </button>
             </div>
           </div>
 
           <div class="sub-action">
-            <button class="line-btn disabled-look" @click="notReady('월 고정 지출 추가')">
+            <button
+              class="line-btn disabled-look"
+              @click="notReady('월 고정 지출 추가')">
               추가
             </button>
           </div>
@@ -110,17 +128,23 @@
                   <td class="expense">-{{ formatCurrency(item.amount) }}</td>
                   <td>{{ getDayFromDate(item.date) }}일</td>
                   <td class="manage-cell">
-                    <button class="mini-btn disabled-look" @click="notReady('월 고정 지출 수정')">
+                    <button
+                      class="mini-btn disabled-look"
+                      @click="notReady('월 고정 지출 수정')">
                       수정
                     </button>
-                    <button class="mini-btn danger disabled-look" @click="notReady('월 고정 지출 삭제')">
+                    <button
+                      class="mini-btn danger disabled-look"
+                      @click="notReady('월 고정 지출 삭제')">
                       삭제
                     </button>
                   </td>
                 </tr>
 
                 <tr v-if="periodicExpenses.length === 0">
-                  <td colspan="4" class="empty">등록된 고정 지출이 없습니다.</td>
+                  <td colspan="4" class="empty">
+                    등록된 고정 지출이 없습니다.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -132,7 +156,9 @@
           <div class="section-head">
             <button class="pill">필터</button>
             <div class="filter-btns">
-              <button class="line-btn primary-outline" @click="applyFilter">검색</button>
+              <button class="line-btn primary-outline" @click="applyFilter">
+                검색
+              </button>
               <button class="line-btn" @click="resetFilter">초기화</button>
             </div>
           </div>
@@ -143,8 +169,7 @@
               <input
                 type="text"
                 v-model="draftFilter.keyword"
-                placeholder="검색어를 입력하세요"
-              />
+                placeholder="검색어를 입력하세요" />
             </div>
 
             <div class="form-group">
@@ -157,8 +182,7 @@
               <input
                 type="text"
                 v-model="draftFilter.category"
-                placeholder="예) 식비"
-              />
+                placeholder="예) 식비" />
             </div>
 
             <div class="form-group">
@@ -167,8 +191,7 @@
                 type="number"
                 min="0"
                 v-model.number="draftFilter.amount"
-                placeholder="예) 10000"
-              />
+                placeholder="예) 10000" />
             </div>
           </div>
         </section>
@@ -178,36 +201,37 @@
 </template>
 
 <script setup>
-import axios from "axios";
-import { computed, onMounted, reactive, ref } from "vue";
+import axios from 'axios';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { getUserInfo } from '../../utils/authutil';
 
-const API_BASE = "http://localhost:3000";
-const USER_ID = "1";
+const API_BASE = 'http://localhost:3000';
+const USER_ID = '1';
 
 const today = new Date();
 const currentYear = today.getFullYear();
-const currentMonth = String(today.getMonth() + 1).padStart(2, "0");
+const currentMonth = String(today.getMonth() + 1).padStart(2, '0');
 const lastDayOfMonth = new Date(currentYear, today.getMonth() + 1, 0).getDate();
 
 const range = reactive({
   start: `${currentYear}-${currentMonth}-01`,
-  end: `${currentYear}-${currentMonth}-${String(lastDayOfMonth).padStart(2, "0")}`,
+  end: `${currentYear}-${currentMonth}-${String(lastDayOfMonth).padStart(2, '0')}`,
 });
 
 const transactions = ref([]);
 const periodicExpenses = ref([]);
 
 const draftFilter = reactive({
-  keyword: "",
-  date: "",
-  category: "",
+  keyword: '',
+  date: '',
+  category: '',
   amount: null,
 });
 
 const activeFilter = reactive({
-  keyword: "",
-  date: "",
-  category: "",
+  keyword: '',
+  date: '',
+  category: '',
   amount: null,
 });
 
@@ -221,9 +245,7 @@ async function fetchTransactions() {
       params: { userid: USER_ID },
     });
     transactions.value = Array.isArray(data) ? data : [];
-  } catch (error) {
-    
-  }
+  } catch (error) {}
 }
 
 async function fetchPeriodicExpenses() {
@@ -232,9 +254,7 @@ async function fetchPeriodicExpenses() {
       params: { userid: USER_ID },
     });
     periodicExpenses.value = Array.isArray(data) ? data : [];
-  } catch (error) {
-    
-  }
+  } catch (error) {}
 }
 
 const filteredTransactions = computed(() => {
@@ -243,8 +263,8 @@ const filteredTransactions = computed(() => {
     .filter((item) => {
       const keyword = activeFilter.keyword.trim().toLowerCase();
       const category = activeFilter.category.trim().toLowerCase();
-      const itemMemo = String(item.memo || "").toLowerCase();
-      const itemCategory = String(item.category || "").toLowerCase();
+      const itemMemo = String(item.memo || '').toLowerCase();
+      const itemCategory = String(item.category || '').toLowerCase();
       const itemAmount = Number(item.amount || 0);
 
       const matchesKeyword = !keyword || itemMemo.includes(keyword);
@@ -252,7 +272,7 @@ const filteredTransactions = computed(() => {
       const matchesCategory = !category || itemCategory.includes(category);
       const matchesAmount =
         activeFilter.amount === null ||
-        activeFilter.amount === "" ||
+        activeFilter.amount === '' ||
         itemAmount === Number(activeFilter.amount);
 
       return matchesKeyword && matchesDate && matchesCategory && matchesAmount;
@@ -264,7 +284,10 @@ const filteredTransactions = computed(() => {
 });
 
 const totalPeriodicExpense = computed(() => {
-  return periodicExpenses.value.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  return periodicExpenses.value.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0,
+  );
 });
 
 function applyFilter() {
@@ -272,20 +295,20 @@ function applyFilter() {
   activeFilter.date = draftFilter.date;
   activeFilter.category = draftFilter.category;
   activeFilter.amount =
-    draftFilter.amount === "" || draftFilter.amount === null
+    draftFilter.amount === '' || draftFilter.amount === null
       ? null
       : Number(draftFilter.amount);
 }
 
 function resetFilter() {
-  draftFilter.keyword = "";
-  draftFilter.date = "";
-  draftFilter.category = "";
+  draftFilter.keyword = '';
+  draftFilter.date = '';
+  draftFilter.category = '';
   draftFilter.amount = null;
 
-  activeFilter.keyword = "";
-  activeFilter.date = "";
-  activeFilter.category = "";
+  activeFilter.keyword = '';
+  activeFilter.date = '';
+  activeFilter.category = '';
   activeFilter.amount = null;
 }
 
@@ -295,23 +318,21 @@ function isInRange(date) {
 }
 
 function formatCurrency(value) {
-  return `${Number(value || 0).toLocaleString("ko-KR")}원`;
+  return `${Number(value || 0).toLocaleString('ko-KR')}원`;
 }
 
 function formatDate(value) {
-  if (!value) return "";
-  return value.replaceAll("-", ".");
+  if (!value) return '';
+  return value.replaceAll('-', '.');
 }
 
 function getDayFromDate(dateString) {
-  if (!dateString) return "";
-  const parts = String(dateString).split("-");
-  return Number(parts[2]) || "";
+  if (!dateString) return '';
+  const parts = String(dateString).split('-');
+  return Number(parts[2]) || '';
 }
 
-function notReady(featureName) {
-  
-}
+function notReady(featureName) {}
 </script>
 
 <style scoped>
