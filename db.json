@@ -5,7 +5,9 @@
       "userid": "user01",
       "name": "홍길동",
       "email": "hong@kb.com",
-      "roles": ["users"],
+      "roles": [
+        "users"
+      ],
       "password": "12345"
     },
     {
@@ -13,7 +15,9 @@
       "userid": "user02",
       "name": "김철수",
       "email": "kim@kb.com",
-      "roles": ["users"],
+      "roles": [
+        "users"
+      ],
       "password": "34567"
     },
     {
@@ -21,7 +25,9 @@
       "name": "김은수",
       "email": "kim@kb.com",
       "password": "34567",
-      "roles": ["users"],
+      "roles": [
+        "users"
+      ],
       "id": "uWme0ep"
     },
     {
@@ -29,7 +35,9 @@
       "userid": "ccc",
       "email": "ccc",
       "password": "lkllll",
-      "roles": ["users"],
+      "roles": [
+        "users"
+      ],
       "id": "KK1bWpC"
     },
     {
@@ -37,7 +45,9 @@
       "userid": "ggg",
       "email": "ggg",
       "password": "ggg",
-      "roles": ["users"],
+      "roles": [
+        "users"
+      ],
       "id": "QyeC3fE"
     },
     {
@@ -45,11 +55,23 @@
       "userid": "qqq",
       "email": "qqq",
       "password": "qqq",
-      "roles": ["users"],
+      "roles": [
+        "users"
+      ],
       "id": "4lY1c97"
     }
   ],
   "transactions": [
+    {
+      "id": "3",
+      "userid": "2",
+      "date": "2026-04-09",
+      "type": "expense",
+      "category": "쇼핑",
+      "detailCategory": "의류",
+      "amount": 50000,
+      "memo": "김철수 테스트 구매"
+    },
     {
       "id": "1",
       "userid": "1",
@@ -62,7 +84,7 @@
     },
     {
       "id": "2",
-      "userid": "1",
+      "userid": "2",
       "date": "2026-04-07",
       "type": "income",
       "category": "월급",
@@ -187,18 +209,107 @@
       "amount": 1000000,
       "period": "current",
       "category": "전체"
+    },
+    {
+      "userId": "2",
+      "amount": 100000,
+      "date": "2026-04-09",
+      "period": "current",
+      "category": "전체",
+      "id": "Tw1CRc6"
+    },
+    {
+      "userId": "2",
+      "amount": 100000,
+      "date": "2026-04-09",
+      "period": "current",
+      "category": "전체",
+      "id": "nMWCi1B"
+    },
+    {
+      "userId": "2",
+      "amount": 100000,
+      "date": "2026-04-09",
+      "period": "current",
+      "category": "전체",
+      "id": "UneYdW4"
+    },
+    {
+      "userId": "2",
+      "amount": 10000000,
+      "date": "2026-04-09",
+      "period": "current",
+      "category": "전체",
+      "id": "CwIcexk"
+    },
+    {
+      "userId": "2",
+      "amount": 100000,
+      "date": "2026-04-09",
+      "period": "current",
+      "category": "전체",
+      "id": "-XWAXj2"
+    },
+    {
+      "userId": "2",
+      "amount": 100000,
+      "date": "2026-04-09",
+      "period": "current",
+      "category": "전체",
+      "id": "sFIfxFR"
+    },
+    {
+      "userid": "2",
+      "amount": 700000,
+      "date": "2026-04-09",
+      "period": "current",
+      "category": "전체",
+      "id": "egGX0tY"
     }
   ],
-  "incomeCategory": ["월급", "용돈", "이자", "부업", "기타"],
+  "incomeCategory": [
+    {
+      "id": 4,
+      "name": "부업"
+    },
+    {
+      "id": 5,
+      "name": "기타"
+    }
+  ],
   "expenseCategory": [
-    "식비",
-    "교통비",
-    "유흥",
-    "공과금",
-    "의료",
-    "주거",
-    "쇼핑",
-    "저축"
+    {
+      "id": 1,
+      "name": "식비"
+    },
+    {
+      "id": 2,
+      "name": "교통비"
+    },
+    {
+      "id": 3,
+      "name": "유흥"
+    },
+    {
+      "id": 4,
+      "name": "공과금"
+    },
+    {
+      "id": 5,
+      "name": "의료"
+    },
+    {
+      "id": 6,
+      "name": "주거"
+    },
+    {
+      "id": 7,
+      "name": "쇼핑"
+    },
+    {
+      "id": 8,
+      "name": "저축"
+    }
   ],
   "periodicExpense": [
     {
@@ -209,6 +320,15 @@
       "category": "공과금",
       "amount": 55000,
       "memo": "핸드폰 요금 자동이체"
+    },
+    {
+      "userid": "2",
+      "date": "2026-04-01",
+      "type": "expense",
+      "category": "고정 지출",
+      "amount": 10000,
+      "memo": "넷플릭스",
+      "id": "myt44Hv"
     }
   ],
   "wishlists": [
@@ -221,6 +341,7 @@
       "targetDate": "2026-12-31",
       "status": "proceeding"
     }
+    
   ],
   "purchases": [
     {

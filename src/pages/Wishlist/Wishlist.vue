@@ -1,233 +1,182 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import {
   getWishlists,
   getWishlistById,
   createWishlist,
   deleteWishlist,
   updateSavedAmount,
-} from "@/api/wishlist.js";
-import { getPurchases, createPurchase } from "@/api/purchase.js";
+} from '@/api/wishlist.js';
+import { getPurchases, createPurchase } from '@/api/purchase.js';
+import { getUserInfo } from '@/utils/authutil';
 
-// --- 상태 관리 (State) ---
-const userid = "1"; // 현재 로그인한 사용자 ID (하드코딩)
-const wishlists = ref([]); // 전체 위시리스트 데이터
-const purchases = ref([]); // 구매 완료 목록 데이터
-const selectedWishlistId = ref(""); // 라디오 버튼이나 셀렉트 박스에서 선택된 위시리스트 ID
-const isLoading = ref(false); // 로딩 상태 제어
+const router = useRouter();
+const userid = ref(null);
+const wishlists = ref([]);
+const purchases = ref([]);
+const selectedWishlistId = ref('');
+const isLoading = ref(false);
 
-// 신규 위시리스트 등록을 위한 입력 폼 데이터
 const form = reactive({
-  itemName: "",
-  targetPrice: "",
-  targetDate: "",
+  itemName: '',
+  targetPrice: '',
+  targetDate: '',
 });
 
-// --- 계산된 속성 (Computed) ---
-// 진행 중인 위시리스트만 필터링 (본인 것 + status가 'proceeding'이거나 없는 경우)
-const activeWishlists = computed(() =>
-  wishlists.value.filter(
-    (item) =>
-      String(item.userid) === String(userid) &&
-      (item.status === "proceeding" || !item.status),
-  ),
-);
 
-// 본인의 구매 완료 내역 필터링
-const purchaseList = computed(() =>
-  purchases.value.filter((item) => String(item.userid) === String(userid)),
-);
+const getProgress = (saved, target) => {
+  if (!target || target === 0) return 0;
+  return Math.floor((saved / target) * 100);
+};
+
+const getCircleStyle = (saved, target) => {
+  const pct = getProgress(saved, target);
+  return {
+    background: `conic-gradient(#73beff ${pct * 3.6}deg, #edf8ff 0deg)`,
+  };
+};
+
+const getDday = (date) => {
+  const target = new Date(date);
+  const today = new Date();
+  const diff = target - today;
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+};
+
+const getDailyAmount = (target, saved, date) => {
+  const dday = getDday(date);
+  if (dday <= 0) return target - saved;
+  return Math.ceil((target - saved) / dday);
+};
 
 // --- 데이터 통신 (API) ---
-// 위시리스트 목록 가져오기
-const fetchWishlists = async () => {
-  const res = await getWishlists();
-  wishlists.value = res.data.filter(
-    (item) => String(item.userid) === String(userid),
-  );
-};
 
-// 구매 내역 목록 가져오기
-const fetchPurchases = async () => {
-  const res = await getPurchases();
-  purchases.value = res.data.filter(
-    (item) => String(item.userid) === String(userid),
-  );
-};
-
-// 페이지 초기화 시 전체 데이터 로드
 const fetchAll = async () => {
   try {
     isLoading.value = true;
-    await fetchWishlists();
-    await fetchPurchases();
+
+    // 1. 유저 정보 확인
+    const userInfo = getUserInfo();
+    if (!userInfo || !userInfo.authenticated) {
+      alert('로그인이 필요합니다.');
+      router.push({ name: 'users/login' });
+      return;
+    }
+
+    userid.value = String(userInfo.id);
+
+    // 2. 데이터 가져오기 (API 함수가 인자를 지원하지 않을 경우를 대비해 전체 로드 후 필터링)
+    const [wishRes, purRes] = await Promise.all([
+      getWishlists(),
+      getPurchases(),
+    ]);
+
+
+    wishlists.value = wishRes.data.filter(
+      (item) => String(item.userid) === userid.value,
+    );
+    purchases.value = purRes.data.filter(
+      (item) => String(item.userid) === userid.value,
+    );
   } catch (error) {
-    console.error("데이터 조회 실패:", error);
-    alert("데이터를 불러오는 중 오류가 발생했습니다.");
+    console.error('데이터 로드 중 에러 발생:', error);
+    alert('데이터를 불러오지 못했습니다.');
   } finally {
     isLoading.value = false;
   }
 };
 
-// 마운트 시 실행
 onMounted(() => {
   fetchAll();
 });
 
-// --- 유틸리티 함수 (Logic) ---
-const resetForm = () => {
-  form.itemName = "";
-  form.targetPrice = "";
-  form.targetDate = "";
-};
 
-// 저축 진행률 계산 (%)
-const getProgress = (savedAmount, targetPrice) => {
-  const target = Number(targetPrice);
-  const saved = Number(savedAmount);
-  if (!target || target <= 0) return 0;
-  return Math.min(100, Math.round((saved / target) * 100));
-};
+const activeWishlists = computed(() =>
+  wishlists.value.filter(
+    (item) => item.status === 'proceeding' || !item.status,
+  ),
+);
 
-// 남은 날짜(D-Day) 계산
-const getDday = (targetDate) => {
-  if (!targetDate) return 0;
-  const today = new Date();
-  const target = new Date(targetDate);
-  today.setHours(0, 0, 0, 0);
-  target.setHours(0, 0, 0, 0);
-  const diff = target - today;
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-};
+const purchaseList = computed(() => purchases.value);
 
-// 남은 금액 계산
-const getRemainingAmount = (targetPrice, savedAmount) =>
-  Math.max(0, Number(targetPrice) - Number(savedAmount));
 
-// 목표 달성을 위해 하루에 저금해야 할 금액 계산
-const getDailyAmount = (targetPrice, savedAmount, targetDate) => {
-  const remain = getRemainingAmount(targetPrice, savedAmount);
-  const dday = getDday(targetDate);
-  if (remain <= 0) return 0;
-  if (dday <= 0) return remain;
-  return Math.ceil(remain / dday);
-};
-
-// 진행률에 따른 원형 프로그레스 바 배경 CSS 생성
-const getCircleStyle = (savedAmount, targetPrice) => {
-  const progress = getProgress(savedAmount, targetPrice);
-  const degree = progress * 3.6; // 100%를 360도로 환산
-  return {
-    background: `conic-gradient(#73BEFF 0deg ${degree}deg, #DDEFFD ${degree}deg 360deg)`,
-  };
-};
-
-// --- 액션 함수 (User Interaction) ---
-// 새 위시리스트 추가
 const addWishlist = async () => {
   if (!form.itemName.trim() || !form.targetPrice || !form.targetDate) {
-    alert("상품명, 가격, 목표 날짜를 모두 입력해주세요.");
-    return;
-  }
-  if (Number(form.targetPrice) <= 0) {
-    alert("가격은 0보다 커야 합니다.");
+    alert('모든 항목을 입력해주세요.');
     return;
   }
   try {
     await createWishlist({
-      userid: String(userid),
+      userid: userid.value,
       itemName: form.itemName.trim(),
       targetPrice: Number(form.targetPrice),
       savedAmount: 0,
       targetDate: form.targetDate,
-      status: "proceeding",
+      status: 'proceeding',
     });
-    resetForm();
-    await fetchWishlists();
+    form.itemName = '';
+    form.targetPrice = '';
+    form.targetDate = '';
+    await fetchAll();
+    alert('위시리스트가 추가되었습니다!');
   } catch (error) {
-    console.error("위시리스트 등록 실패:", error);
-    alert("위시리스트 등록에 실패했습니다.");
+    alert('등록 중 오류가 발생했습니다.');
   }
 };
 
-// 특정 위시리스트에 금액 추가
 const addMoney = async (wishlist) => {
-  const input = prompt("추가할 금액을 입력하세요.");
+  const input = prompt('추가할 금액을 입력하세요.');
   if (input === null) return;
   const amount = Number(input);
-  if (Number.isNaN(amount) || amount <= 0) {
-    alert("올바른 금액을 입력해주세요.");
+  if (isNaN(amount) || amount <= 0) {
+    alert('올바른 금액을 입력해주세요.');
     return;
   }
   try {
-    // 현재 금액 + 추가 금액 (목표 금액을 초과할 수 없음)
     const nextSavedAmount = Math.min(
       Number(wishlist.targetPrice),
       Number(wishlist.savedAmount) + amount,
     );
     await updateSavedAmount(wishlist.id, nextSavedAmount);
-    await fetchWishlists();
+    await fetchAll();
   } catch (error) {
-    console.error("돈 넣기 실패:", error);
-    alert("돈 넣기에 실패했습니다.");
+    alert('금액 업데이트에 실패했습니다.');
   }
 };
 
-// 선택된 위시리스트 삭제
 const removeSelectedWishlist = async () => {
-  if (!selectedWishlistId.value) {
-    alert("삭제할 위시리스트를 선택해주세요.");
-    return;
-  }
-  const ok = confirm("선택한 위시리스트를 삭제할까요?");
-  if (!ok) return;
+  if (!selectedWishlistId.value) return alert('항목을 선택해주세요.');
+  if (!confirm('정말 삭제하시겠습니까?')) return;
   try {
     await deleteWishlist(selectedWishlistId.value);
-    selectedWishlistId.value = "";
-    await fetchWishlists();
+    selectedWishlistId.value = '';
+    await fetchAll();
   } catch (error) {
-    console.error("위시리스트 삭제 실패:", error);
-    alert("위시리스트 삭제에 실패했습니다.");
+    alert('삭제에 실패했습니다.');
   }
 };
 
-// 위시리스트 완료 -> 구매 내역으로 이동
 const completePurchase = async () => {
-  if (!selectedWishlistId.value) {
-    alert("구매 완료할 위시리스트를 선택해주세요.");
-    return;
-  }
-
+  if (!selectedWishlistId.value) return alert('항목을 선택해주세요.');
   try {
-    // 1. 위시리스트 상세 정보 조회
     const wishlistRes = await getWishlistById(selectedWishlistId.value);
     const wishlist = wishlistRes.data;
 
-    const payload = {
-      // id는 JSON Server가 자동으로 생성하므로 제외하는 것이 좋습니다.
+    await createPurchase({
       wishlistId: String(wishlist.id),
       userid: String(wishlist.userid),
       itemName: wishlist.itemName,
       completionDate: new Date().toISOString().slice(0, 10),
       finalPrice: wishlist.targetPrice,
-    };
+    });
 
-    // 2. 구매 내역 생성을 "먼저" 수행 (순서 변경)
-    const postRes = await createPurchase(payload);
-
-    if (postRes.status === 201 || postRes.status === 200) {
-      // 3. 생성이 성공했을 때만 위시리스트에서 삭제
-      await deleteWishlist(wishlist.id);
-
-      selectedWishlistId.value = "";
-      // 목록 새로고침
-      await fetchWishlists();
-      await fetchPurchases();
-      alert("구매가 완료되어 목록으로 이동되었습니다!");
-    }
+    await deleteWishlist(wishlist.id);
+    selectedWishlistId.value = '';
+    await fetchAll();
+    alert('구매 완료 목록으로 이동되었습니다!');
   } catch (error) {
-    console.error("처리 중 오류 발생:", error);
-    alert("구매 처리 중 오류가 발생했습니다. 서버 로그를 확인하세요.");
+    alert('구매 처리 중 오류가 발생했습니다.');
   }
 };
 </script>
@@ -377,14 +326,14 @@ const completePurchase = async () => {
 </template>
 
 <style scoped>
-/* 페이지 전체 레이아웃 */
+
 .wishlist-page {
   width: 100%;
   padding-top: 8px;
   box-sizing: border-box;
 }
 
-/* 상단 타이틀 영역 (Saving Goal & 위시리스트) */
+
 .page-head {
   display: flex;
   justify-content: space-between;
@@ -411,7 +360,6 @@ const completePurchase = async () => {
   color: #222;
 }
 
-/* 메인 레이아웃: 왼쪽(리스트)과 오른쪽(입력창/정보) 배치 */
 .page-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(620px, 860px);
@@ -419,7 +367,6 @@ const completePurchase = async () => {
   align-items: start;
 }
 
-/* 위시리스트 카드 그리드 설정 */
 .wishlist-section {
   min-width: 0;
 }
@@ -436,7 +383,6 @@ const completePurchase = async () => {
   max-width: 320px;
 }
 
-/* 공통 카드 스타일 (배경, 테두리, 그림자 등) */
 .wishlist-card,
 .panel-card,
 .empty-card {
@@ -447,13 +393,12 @@ const completePurchase = async () => {
   box-sizing: border-box;
 }
 
-/* 개별 위시리스트 카드 내부 스타일 */
+
 .wishlist-card {
   padding: 22px 22px 24px;
   transition: all 0.2s ease;
 }
 
-/* 카드 선택 시 강조 효과 (파란색 테두리 및 그림자) */
 .wishlist-card.selected {
   border-color: #73beff;
   box-shadow: 0 8px 20px rgba(115, 190, 255, 0.18);
@@ -484,7 +429,7 @@ const completePurchase = async () => {
   word-break: keep-all;
 }
 
-/* 원형 진행률 그래프 영역 */
+
 .progress-wrap {
   display: flex;
   justify-content: center;
@@ -515,7 +460,7 @@ const completePurchase = async () => {
   color: #222;
 }
 
-/* D-day 및 하루 저금액 안내 박스 */
+
 .info-box {
   width: 100%;
   background: #edf8ff;
@@ -530,7 +475,6 @@ const completePurchase = async () => {
   box-sizing: border-box;
 }
 
-/* 오른쪽 섹션 (입력창 + 구매관리 + 구매목록) 레이아웃 */
 .right-section {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
@@ -545,7 +489,7 @@ const completePurchase = async () => {
   height: auto;
 }
 
-/* 위시리스트 추가 입력 폼 패널 */
+
 .input-panel {
   grid-column: 1;
   grid-row: 1;
@@ -558,7 +502,7 @@ const completePurchase = async () => {
   display: contents;
 }
 
-/* 구매 완료/삭제 버튼 패널 */
+
 .purchase-action-panel {
   grid-column: 1;
   grid-row: 2;
@@ -569,7 +513,6 @@ const completePurchase = async () => {
   padding: 26px;
 }
 
-/* 우측 전체를 차지하는 구매 성공 목록 패널 */
 .purchase-list-panel {
   grid-column: 2;
   grid-row: 1 / span 2;
@@ -579,7 +522,7 @@ const completePurchase = async () => {
   padding: 26px;
 }
 
-/* 섹션 타이틀 배지 (상품 정보 입력, 구매 성공 목록 등) */
+
 .panel-badge {
   display: inline-block;
   width: fit-content;
@@ -598,7 +541,6 @@ const completePurchase = async () => {
   white-space: nowrap;
 }
 
-/* 입력 필드 및 라벨 스타일 */
 .field-label {
   display: block;
   margin-bottom: 8px;
@@ -624,7 +566,6 @@ const completePurchase = async () => {
   box-shadow: 0 0 0 3px rgba(115, 190, 255, 0.12);
 }
 
-/* 구매 관리 섹션 내 셀렉트 박스 카드 */
 .select-card {
   border: 1px solid #b8dbf6;
   border-radius: 18px;
@@ -647,7 +588,6 @@ const completePurchase = async () => {
   margin-bottom: 0;
 }
 
-/* 공통 버튼 스타일 */
 .action-btn {
   border: none;
   border-radius: 14px;
@@ -683,7 +623,7 @@ const completePurchase = async () => {
   margin-top: 10px;
 }
 
-/* 위시리스트 카드 안의 '돈 넣기' 버튼 전용 스타일 */
+
 .wishlist-card .action-btn.primary {
   width: 100%;
   min-height: 68px;
@@ -695,7 +635,7 @@ const completePurchase = async () => {
   align-self: stretch;
 }
 
-/* 구매 완료 목록 스크롤 및 아이템 스타일 */
+
 .purchase-list {
   list-style: none;
   padding: 0 4px 0 0;
@@ -705,7 +645,6 @@ const completePurchase = async () => {
   max-height: 100%;
 }
 
-/* 커스텀 스크롤바 디자인 */
 .purchase-list::-webkit-scrollbar {
   width: 8px;
 }
@@ -742,7 +681,6 @@ const completePurchase = async () => {
   color: #6d7f8b;
 }
 
-/* 데이터가 없을 때의 안내 문구 스타일 */
 .empty-card,
 .empty-purchase,
 .state-box {
@@ -759,16 +697,15 @@ const completePurchase = async () => {
   justify-content: center;
 }
 
-/* --- 반응형 레이아웃 처리 (미디어 쿼리) --- */
 
-/* 1. 일반적인 큰 화면 대응 */
+
 @media (max-width: 1600px) {
   .page-layout {
     grid-template-columns: minmax(0, 1fr) minmax(560px, 760px);
   }
 }
 
-/* 2. 노트북/작은 모니터: 2열 레이아웃을 1열로 전환 */
+
 @media (max-width: 1360px) {
   .page-layout {
     grid-template-columns: 1fr;
@@ -814,7 +751,7 @@ const completePurchase = async () => {
   }
 }
 
-/* 3. 태블릿 기기 대응 */
+
 @media (max-width: 900px) {
   .wishlist-grid {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -838,7 +775,6 @@ const completePurchase = async () => {
   }
 }
 
-/* 4. 모바일 기기 대응: 간격 축소 및 폰트 크기 조정 */
 @media (max-width: 640px) {
   .wishlist-page {
     padding-top: 4px;
