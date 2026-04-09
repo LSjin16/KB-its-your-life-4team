@@ -5,6 +5,7 @@
       "userid": "user01",
       "name": "홍길동",
       "email": "hong@kb.com",
+      "roles": ["users"],
       "password": "12345"
     },
     {
@@ -12,7 +13,40 @@
       "userid": "user02",
       "name": "김철수",
       "email": "kim@kb.com",
+      "roles": ["users"],
       "password": "34567"
+    },
+    {
+      "userid": "user3",
+      "name": "김은수",
+      "email": "kim@kb.com",
+      "password": "34567",
+      "roles": ["users"],
+      "id": "uWme0ep"
+    },
+    {
+      "name": "ccc",
+      "userid": "ccc",
+      "email": "ccc",
+      "password": "lkllll",
+      "roles": ["users"],
+      "id": "KK1bWpC"
+    },
+    {
+      "name": "ggg",
+      "userid": "ggg",
+      "email": "ggg",
+      "password": "ggg",
+      "roles": ["users"],
+      "id": "QyeC3fE"
+    },
+    {
+      "name": "qqq",
+      "userid": "qqq",
+      "email": "qqq",
+      "password": "qqq",
+      "roles": ["users"],
+      "id": "4lY1c97"
     }
   ],
   "transactions": [
@@ -35,17 +69,9 @@
       "detailCategory": "본업",
       "amount": 3000000,
       "memo": "4월 정기 급여"
-    },
-    {
-      "date": "2026-04-08",
-      "category": "식비",
-      "amount": 1000,
-      "memo": "",
-      "type": "income",
-      "id": "ajmo-1j0Rz8"
     }
   ],
-  "budgets": [
+  "budget": [
     {
       "id": "1",
       "userid": "1",
@@ -55,61 +81,16 @@
       "category": "전체"
     }
   ],
-  "incomeCategory": [
-    {
-      "id": "ic1",
-      "name": "월급"
-    },
-    {
-      "id": "ic2",
-      "name": "용돈"
-    },
-    {
-      "id": "ic3",
-      "name": "이자"
-    },
-    {
-      "id": "ic4",
-      "name": "부업"
-    },
-    {
-      "id": "ic5",
-      "name": "기타"
-    }
-  ],
+  "incomeCategory": ["월급", "용돈", "이자", "부업", "기타"],
   "expenseCategory": [
-    {
-      "id": "ec1",
-      "name": "식비"
-    },
-    {
-      "id": "ec2",
-      "name": "교통비"
-    },
-    {
-      "id": "ec3",
-      "name": "유흥"
-    },
-    {
-      "id": "ec4",
-      "name": "공과금"
-    },
-    {
-      "id": "ec5",
-      "name": "의료"
-    },
-    {
-      "id": "ec6",
-      "name": "주거"
-    },
-    {
-      "id": "ec7",
-      "name": "쇼핑"
-    },
-    {
-      "id": "ec8",
-      "name": "저축"
-    }
+    "식비",
+    "교통비",
+    "유흥",
+    "공과금",
+    "의료",
+    "주거",
+    "쇼핑",
+    "저축"
   ],
   "periodicExpense": [
     {
@@ -151,6 +132,5 @@
       "completionDate": "2026-03-01",
       "finalPrice": 300000
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  ]
 }

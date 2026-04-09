@@ -1,6 +1,117 @@
+<template>
+  <aside class="kb-sidebar">
+    <div class="logo-area">
+      <span class="logo-text">KB 가계부</span>
+    </div>
+
+    <nav class="kb-nav">
+      <router-link to="/" class="kb-nav-item">
+        <span class="icon">🏠</span> <span class="txt">홈</span>
+      </router-link>
+      <router-link to="/trans" class="kb-nav-item">
+        <span class="icon">🔍</span> <span class="txt">전체 내역 조회</span>
+      </router-link>
+      <router-link to="/wishlist" class="kb-nav-item">
+        <span class="icon">📡</span> <span class="txt">위시리스트</span>
+      </router-link>
+      <router-link to="/budget" class="kb-nav-item">
+        <span class="icon">⚖️</span> <span class="txt">예산 관리</span>
+      </router-link>
+    </nav>
+
+    <div class="kb-actions">
+      <button @click="openModal('income')" class="kb-btn kb-income">
+        ➕ 수입 추가
+      </button>
+      <button @click="openModal('expense')" class="kb-btn kb-expense">
+        ➖ 지출 추가
+      </button>
+      <!-- 로그아웃 버튼이 로그인되어 있을 때만 보이도록 함. -->
+      <button v-if="isLoggedIn" class="kb-btn kb-logout" @click="handleLogout">
+        🔓 로그아웃
+      </button>
+    </div>
+
+    <div
+      v-if="isModalOpen"
+      class="modal-overlay"
+      @click.self="isModalOpen = false"
+    >
+      <div class="modal-content">
+        <h3 :class="modalType">
+          {{ modalType === "income" ? "수입" : "지출" }} 내역 추가
+        </h3>
+        <div class="form-container">
+          <div class="form-item">
+            <label>날짜</label>
+            <input type="date" v-model="formData.date" />
+          </div>
+          <div class="form-item">
+            <label>카테고리</label>
+            <input
+              type="text"
+              v-model="formData.category"
+              placeholder="식비, 월급 등"
+            />
+          </div>
+          <div class="form-item">
+            <label>금액 (원)</label>
+            <input type="number" v-model="formData.amount" placeholder="0" />
+          </div>
+          <div class="form-item">
+            <label>메모</label>
+            <input
+              type="text"
+              v-model="formData.memo"
+              placeholder="상세 내용을 적어주세요"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="submitData" class="btn-save">저장</button>
+          <button @click="isModalOpen = false" class="btn-cancel">취소</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</template>
+
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import axios from "axios";
+import { useRouter } from "vue-router";
+import { getUserInfo, logoutProcess } from "../../utils/authutil";
+
+// -----------------------------------------------------------------------------------
+const router = useRouter();
+
+// 로그인 상태를 저장할 변수
+// 처음에는 로그인이 되어있지 않아서 false로 설정
+const isLoggedIn = ref(false);
+
+// 로그인 상태 체크 함수
+const checkLoginStatus = () => {
+  const usreInfo = getUserInfo();
+  isLoggedIn.value = usreInfo.authenticated;
+};
+
+// 페이지가 로드될 때 체크
+onMounted(() => {
+  checkLoginStatus();
+});
+
+// 로그아웃 함수 실행 시
+const handleLogout = () => {
+  if (confirm("로그아웃 하시겠습니까?")) {
+    logoutProcess(() => {
+      isLoggedIn.value = false;
+      router.push({ name: "dashboard" });
+      window.location.href = "/";
+    });
+  }
+};
+
+// ----------------------------------------------------------------------------
 
 // 1. 모달 제어 상태
 const isModalOpen = ref(false);
@@ -48,81 +159,6 @@ const submitData = async () => {
   }
 };
 </script>
-
-<template>
-  <aside class="kb-sidebar">
-    <div class="logo-area">
-      <span class="logo-text">KB 가계부</span>
-    </div>
-
-    <nav class="kb-nav">
-      <router-link to="/" class="kb-nav-item">
-        <span class="icon">🏠</span> <span class="txt">홈</span>
-      </router-link>
-      <router-link to="/trans" class="kb-nav-item">
-        <span class="icon">🔍</span> <span class="txt">전체 내역 조회</span>
-      </router-link>
-      <router-link to="/wishlist" class="kb-nav-item">
-        <span class="icon">📡</span> <span class="txt">위시리스트</span>
-      </router-link>
-      <router-link to="/budget" class="kb-nav-item">
-        <span class="icon">⚖️</span> <span class="txt">예산 관리</span>
-      </router-link>
-    </nav>
-
-    <div class="kb-actions">
-      <button @click="openModal('income')" class="kb-btn kb-income">
-        ➕ 수입 추가
-      </button>
-      <button @click="openModal('expense')" class="kb-btn kb-expense">
-        ➖ 지출 추가
-      </button>
-      <button class="kb-btn kb-logout">🔓 로그아웃</button>
-    </div>
-
-    <div
-      v-if="isModalOpen"
-      class="modal-overlay"
-      @click.self="isModalOpen = false"
-    >
-      <div class="modal-content">
-        <h3 :class="modalType">
-          {{ modalType === "income" ? "수입" : "지출" }} 내역 추가
-        </h3>
-        <div class="form-container">
-          <div class="form-item">
-            <label>날짜</label>
-            <input type="date" v-model="formData.date" />
-          </div>
-          <div class="form-item">
-            <label>카테고리</label>
-            <input
-              type="text"
-              v-model="formData.category"
-              placeholder="식비, 월급 등"
-            />
-          </div>
-          <div class="form-item">
-            <label>금액 (원)</label>
-            <input type="number" v-model="formData.amount" placeholder="0" />
-          </div>
-          <div class="form-item">
-            <label>메모</label>
-            <input
-              type="text"
-              v-model="formData.memo"
-              placeholder="상세 내용을 적어주세요"
-            />
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button @click="submitData" class="btn-save">저장</button>
-          <button @click="isModalOpen = false" class="btn-cancel">취소</button>
-        </div>
-      </div>
-    </div>
-  </aside>
-</template>
 
 <style scoped>
 /* 사이드바 기본 스타일 (사용자 시안 반영) */
