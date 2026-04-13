@@ -160,98 +160,33 @@
       "type": "expense",
       "userid": "1",
       "id": "AGKB2Pa"
-    }
-  ],
-  "budgets": [
-    {
-      "userid": "1",
-      "date": "2026-04-01",
-      "type": "expense",
-      "category": "교통비",
-      "detailCategory": "",
-      "amount": 60000,
-      "memo": "ktx",
-      "id": "1vM6rPS"
     },
     {
-      "userid": "1",
-      "date": "2026-04-01",
+      "date": "2026-04-10",
+      "category": "식사",
+      "amount": 1,
+      "memo": "테스트",
       "type": "expense",
-      "category": "공과금",
-      "detailCategory": "",
-      "amount": 123123,
-      "memo": "123123",
-      "id": "_AKt9We"
+      "userid": "4",
+      "id": "AJ2_OfE"
     },
     {
-      "userid": "1",
-      "date": "2026-04-01",
+      "date": "2026-04-12",
+      "category": "이자5",
+      "amount": 10000000,
+      "memo": "",
       "type": "income",
-      "category": "부업",
-      "detailCategory": "",
-      "amount": 10000,
-      "memo": "구독권",
-      "id": "vuzEZw5"
+      "userid": "4",
+      "id": "XmFSYPd"
     },
     {
-      "userid": "1",
-      "date": "2026-04-11",
+      "date": "2026-04-12",
+      "category": "식사",
+      "amount": 1000000,
+      "memo": "",
       "type": "expense",
-      "category": "고정 지출",
-      "detailCategory": "",
-      "amount": 11111,
-      "memo": "1111",
-      "id": "ewH-Uyg"
-    },
-    {
-      "userid": "2",
-      "date": "2026-04-01",
-      "type": "expense",
-      "category": "고정 지출",
-      "detailCategory": "",
-      "amount": 10000,
-      "memo": "넷플릭스",
-      "id": "Z98EyFY"
-    },
-    {
-      "userid": "2",
-      "date": "2026-04-07",
-      "type": "expense",
-      "category": "고정 지출",
-      "detailCategory": "",
-      "amount": 30000,
-      "memo": "통신비",
-      "id": "KlSfqXr"
-    },
-    {
-      "userid": "1",
-      "date": "2026-04-25",
-      "type": "expense",
-      "category": "고정 지출",
-      "detailCategory": "",
-      "amount": 55000,
-      "memo": "핸드폰 요금 자동이체",
-      "id": "5Bv9Tlp"
-    },
-    {
-      "userid": "1",
-      "date": "2026-04-05",
-      "type": "expense",
-      "category": "고정 지출",
-      "detailCategory": "",
-      "amount": 10000,
-      "memo": "netflix",
-      "id": "dTAc6fG"
-    },
-    {
-      "userid": "1",
-      "date": "2026-04-01",
-      "type": "expense",
-      "category": "고정 지출",
-      "detailCategory": "",
-      "amount": 10000,
-      "memo": "구독권",
-      "id": "9ppZBkR"
+      "userid": "4",
+      "id": "X1A6nVy"
     }
   ],
   "budgets": [
@@ -262,6 +197,14 @@
       "amount": 12000,
       "period": "current",
       "category": "전체"
+    },
+    {
+      "userid": "4",
+      "amount": 2000000,
+      "date": "2026-04-12",
+      "period": "current",
+      "category": "전체",
+      "id": "1qkDytq"
     }
   ],
   "incomeCategory": [
@@ -282,7 +225,12 @@
       "id": 8
     }
   ],
-  "expenseCategory": [],
+  "expenseCategory": [
+    {
+      "name": "식사",
+      "id": 1
+    }
+  ],
   "periodicExpense": [
     {
       "userid": "2",
@@ -339,6 +287,15 @@
       "targetDate": "2026-04-23",
       "status": "proceeding",
       "id": 1
+    },
+    {
+      "userid": "4",
+      "itemName": "애플워치",
+      "targetPrice": 100000,
+      "savedAmount": 0,
+      "targetDate": "2026-04-23",
+      "status": "proceeding",
+      "id": 2
     }
   ],
   "purchases": [
